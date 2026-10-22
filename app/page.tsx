@@ -3,7 +3,7 @@
 import { ChangeEvent, FormEvent, useRef, useState } from "react";
 import {
   ArrowLeft, ArrowRight, BookOpen, Check, CheckCircle2, Clock3, CloudUpload,
-  FileText, GraduationCap, Mail, ShieldCheck, Sparkles, UploadCloud, X
+  FileText, GraduationCap, Mail, ShieldCheck, Sparkles
 } from "lucide-react";
 
 type Summary = {
