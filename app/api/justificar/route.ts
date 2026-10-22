@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "El nombre del archivo es demasiado largo." }, { status: 400 });
     }
 
-    const summary = { subject, ...(summaries[subject] ?? fallback) };
+    // Pequeña espera para que la interfaz muestre el estado de carga en la demo.\n    await new Promise((resolve) => setTimeout(resolve, 1200));\n\n    const summary = { subject, ...(summaries[subject] ?? fallback) };
 
     // Prototipo: solo registra la intención de envío. No se envía ningún correo real.
     console.log("[DEMO EMAIL] Copia de resumen preparada", {
