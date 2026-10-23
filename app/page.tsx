@@ -188,6 +188,8 @@ export default function Home() {
 
           <StudyActions title={summary.title} subject={summary.subject} summary={summary} />
 
+          <StudyActions title={summary.title} subject={summary.subject} summary={summary} />
+
           <div className="mt-6 flex gap-3 rounded-md border border-[#cbd4c3] bg-[#e4e9dc] p-4"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#315b43]"><Mail size={18} /></div><div><p className="text-sm font-semibold text-emerald-900">Copia preparada para tu correo institucional</p><p className="mt-1 text-sm leading-5 text-emerald-800">Se ha enviado una copia a tu correo institucional: {email}. <span className="font-medium">(Confirmación simulada)</span></p></div></div>
           <p className="mt-5 text-left text-xs text-slate-500">Resumen de demostración basado en datos de ejemplo; todavía no se analiza un documento de clase real.</p>
         </section>}
