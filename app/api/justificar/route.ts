@@ -7,7 +7,7 @@ const summaries: Record<string, {
   duration: string;
   points: { time: string; title: string; detail: string }[];
 }> = {
-  "algoritmic-thinking": {
+  "Innovación y modelos de negocio": {
     title: "Introducción a la innovación y propuesta de valor",
     duration: "52 minutos",
     points: [
@@ -17,7 +17,7 @@ const summaries: Record<string, {
       { time: "41:20", title: "Validación de ideas", detail: "Los prototipos y las pruebas con usuarios permiten obtener retroalimentación temprana antes de invertir recursos en una solución completa." },
     ],
   },
-  "design-thinking": {
+  "Marketing estratégico": {
     title: "Segmentación, posicionamiento y propuesta de marca",
     duration: "48 minutos",
     points: [
@@ -43,7 +43,7 @@ const fallback = {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const subject = typeof body.subject === "string" ? body.subject.trim() : typeof body.materia === "string" ? body.materia.trim() : "";
+    const subject = typeof body.subject === "string" ? body.subject.trim() : "";
     const fileName = typeof body.fileName === "string" ? body.fileName.trim() : "";
     const email = typeof body.email === "string" ? body.email.trim() : "";
 
