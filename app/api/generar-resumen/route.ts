@@ -6,7 +6,7 @@ type Tarjeta = { titulo: string; resumen: string; detalle: string };
 type MockResumen = { titulo: string; tarjetas: Tarjeta[]; audio_texto: string };
 
 const RESUMENES: Record<string, MockResumen> = {
-  "Algoritmic Thinking": {
+  "algoritmic-thinking": {
     titulo: "Pensar paso a paso: Algoritmic Thinking",
     tarjetas: [
       {
@@ -37,7 +37,7 @@ Para estudiar, elige una actividad cotidiana, como preparar tu mochila o planear
 
 La fecha de la sesión seleccionada es importante para que puedas relacionar este repaso con tu clase y tus apuntes. Antes de la próxima sesión, lleva tu algoritmo escrito y una pregunta sobre el paso que te pareció más difícil. Recuerda: descomponer, ordenar, probar y mejorar. Esa secuencia convierte un problema confuso en algo que puedes comprender y resolver.`
   },
-  "Design Thinking": {
+  "design-thinking": {
     titulo: "Diseñar desde las personas: Design Thinking",
     tarjetas: [
       {
@@ -66,7 +66,7 @@ La siguiente etapa es probar. Pide a alguien que use el prototipo para completar
 
 Estas etapas no siempre ocurren en una línea recta. Los resultados de una prueba pueden llevarte a redefinir el problema, regresar a la empatía o desarrollar una idea completamente distinta. Para prepararte para la próxima sesión, identifica una necesidad real, escribe una pregunta de diseño y crea un prototipo de baja fidelidad. Incluye una pregunta concreta que quieras investigar y evita intentar demostrar que tu primera idea es correcta. La meta es descubrir qué resulta útil para las personas.`
   },
-  "People and Teams": {
+  "people-teams": {
     titulo: "Colaborar con intención: People and Teams",
     tarjetas: [
       {
