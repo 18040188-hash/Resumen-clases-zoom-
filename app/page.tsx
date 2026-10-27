@@ -99,7 +99,13 @@ export default function Home() {
               <div><h2 className="font-serif text-2xl">Justificación de falta</h2><p className="mt-1 text-sm text-[#65685f]">Los campos marcados con * son obligatorios.</p></div>
             </div>
 
-            <SelectorClase materia={materia} fecha={fecha} onMateriaChange={setMateria} onFechaChange={setFecha}/>
+           {/* Elimina el div con el grid y el select manual, deja solo esto: */}
+            <SelectorClase 
+              materia={materia} 
+              fecha={fecha} 
+              onMateriaChange={setMateria} 
+              onFechaChange={setFecha}
+            />
 
             <div className="mt-5">
               <label htmlFor="comprobante" className="mb-2 block text-sm font-semibold">Comprobante de ausencia *</label>
