@@ -2,14 +2,8 @@
 
 import { ChangeEvent, FormEvent, useState } from "react";
 import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, CheckCircle2, FileText, Mail, X } from "lucide-react";
+import SelectorClase from "@/components/SelectorClase";
 import AudioPlayer from "@/components/AudioPlayer";
-
-const IDS_MATERIA_VALIDOS = ["algoritmic-thinking", "design-thinking", "people-teams"] as const;
-const NOMBRES_MATERIA: Record<string, string> = {
-  "algoritmic-thinking": "Algoritmic Thinking",
-  "design-thinking": "Design Thinking",
-  "people-teams": "People and Teams",
-};
 
 type Tarjeta = { titulo: string; resumen: string; detalle: string };
 type Resumen = { titulo: string; tarjetas: Tarjeta[]; audio_texto: string; materia?: string; fecha?: string };
@@ -37,8 +31,7 @@ export default function Home() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    console.log("Materia seleccionada:", materia);
-    if (!(IDS_MATERIA_VALIDOS as readonly string[]).includes(materia) || !fecha || !file || !email.trim()) {
+    if (!materia || !fecha || !file || !email.trim()) {
       setError("Selecciona la materia, la fecha y completa los datos del justificante.");
       return;
     }
@@ -57,7 +50,7 @@ export default function Home() {
       const response = await fetch("/api/generar-resumen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ materia, materiaId: materia, subject: materia, fecha }),
+        body: JSON.stringify({ materia, fecha }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "No se pudo generar el resumen.");
@@ -106,23 +99,7 @@ export default function Home() {
               <div><h2 className="font-serif text-2xl">Justificación de falta</h2><p className="mt-1 text-sm text-[#65685f]">Los campos marcados con * son obligatorios.</p></div>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div>
-                <label htmlFor="materia" className="mb-2 block text-sm font-semibold text-[#20251f]">Materia y grupo <span aria-hidden="true">*</span></label>
-                <select id="materia" name="materia" required value={materia} onChange={(event) => setMateria(event.target.value)}
-                  className="min-h-12 w-full border border-[#c9c1b4] bg-[#fbf9f3] px-4 py-3 text-sm text-[#20251f] outline-none focus:border-[#244c3b]">
-                  <option value="">Selecciona tu clase</option>
-                  <option value="algoritmic-thinking">Algoritmic Thinking, Grupo B, 11:20</option>
-                  <option value="design-thinking">Design Thinking, Grupo A, 8:00</option>
-                  <option value="people-teams">People and Teams, Grupo B, 13:00</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="fecha-clase" className="mb-2 block text-sm font-semibold text-[#20251f]">Fecha de la clase <span aria-hidden="true">*</span></label>
-                <input id="fecha-clase" name="fecha-clase" type="date" required value={fecha} onChange={(event) => setFecha(event.target.value)}
-                  className="min-h-12 w-full border border-[#c9c1b4] bg-[#fbf9f3] px-4 py-3 text-sm text-[#20251f] outline-none focus:border-[#244c3b]" />
-              </div>
-            </div>
+            <SelectorClase materia={materia} fecha={fecha} onMateriaChange={setMateria} onFechaChange={setFecha}/>
 
             <div className="mt-5">
               <label htmlFor="comprobante" className="mb-2 block text-sm font-semibold">Comprobante de ausencia *</label>
@@ -152,7 +129,7 @@ export default function Home() {
             <div>
               <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#315b43]"><CheckCircle2 size={15}/> Guía de estudio lista</p>
               <h1 className="max-w-3xl font-serif text-4xl font-normal leading-tight sm:text-6xl">{resumen.titulo}</h1>
-              <p className="mt-4 flex flex-wrap items-center gap-2 text-sm text-[#5d6259]"><CalendarDays size={16}/> {NOMBRES_MATERIA[materia] ?? materia} · Sesión del {fecha}</p>
+              <p className="mt-4 flex flex-wrap items-center gap-2 text-sm text-[#5d6259]"><CalendarDays size={16}/> {materia} · Sesión del {fecha}</p>
             </div>
             <button type="button" onClick={reset} className="inline-flex min-h-11 items-center gap-2 self-start border border-[#244c3b] px-4 py-2 text-sm font-semibold text-[#244c3b] hover:bg-[#e4e9dc]"><ArrowLeft size={16}/> Nueva solicitud</button>
           </div>
