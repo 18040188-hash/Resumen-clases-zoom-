@@ -7,7 +7,7 @@ const summaries: Record<string, {
   duration: string;
   points: { time: string; title: string; detail: string }[];
 }> = {
-  "Innovación y modelos de negocio": {
+  "algoritmic-thinking": {
     title: "Introducción a la innovación y propuesta de valor",
     duration: "52 minutos",
     points: [
@@ -17,7 +17,7 @@ const summaries: Record<string, {
       { time: "41:20", title: "Validación de ideas", detail: "Los prototipos y las pruebas con usuarios permiten obtener retroalimentación temprana antes de invertir recursos en una solución completa." },
     ],
   },
-  "Marketing estratégico": {
+  "design-thinking": {
     title: "Segmentación, posicionamiento y propuesta de marca",
     duration: "48 minutos",
     points: [
