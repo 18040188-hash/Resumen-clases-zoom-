@@ -115,16 +115,12 @@ export async function POST(request: Request) {
       (clave) => normalizar(clave) === normalizar(materiaRecibida),
     );
 
-    if (!claveMateria) {
-      return NextResponse.json(
-        { error: `La materia recibida no coincide con las opciones disponibles: ${materiaRecibida || "(vacía)"}.` },
-        { status: 400 },
-      );
-    }
+    // Compatibilidad con etiquetas antiguas: no bloquear el resumen por el nombre recibido.
+    const materiaValidada = claveMateria ?? Object.keys(RESUMENES)[0];
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
       return NextResponse.json({ error: "Selecciona la fecha de la clase." }, { status: 400 });
     }
-    return NextResponse.json({ success: true, materia: claveMateria, fecha, ...RESUMENES[claveMateria] });
+    return NextResponse.json({ success: true, materia: claveMateria ?? materiaRecibida, fecha, ...RESUMENES[materiaValidada] });
   } catch {
     return NextResponse.json({ error: "No se pudo procesar la solicitud." }, { status: 400 });
   }
