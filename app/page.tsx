@@ -2,7 +2,7 @@
 
 import { ChangeEvent, FormEvent, useState } from "react";
 import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, CheckCircle2, FileText, Mail, X } from "lucide-react";
-import SelectorClase from "@/components/SelectorClase";
+import SelectorClase, { CLASES } from "@/components/SelectorClase";
 import AudioPlayer from "@/components/AudioPlayer";
 
 type Tarjeta = { titulo: string; resumen: string; detalle: string };
@@ -31,7 +31,7 @@ export default function Home() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!materia || !fecha || !file || !email.trim()) {
+    if (!CLASES.some((clase) => clase.value === materia) || !fecha || !file || !email.trim()) {
       setError("Selecciona la materia, la fecha y completa los datos del justificante.");
       return;
     }
@@ -50,7 +50,7 @@ export default function Home() {
       const response = await fetch("/api/generar-resumen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ materia, fecha }),
+        body: JSON.stringify({ materia, materiaId: materia, subject: materia, fecha }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "No se pudo generar el resumen.");
@@ -129,7 +129,7 @@ export default function Home() {
             <div>
               <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#315b43]"><CheckCircle2 size={15}/> Guía de estudio lista</p>
               <h1 className="max-w-3xl font-serif text-4xl font-normal leading-tight sm:text-6xl">{resumen.titulo}</h1>
-              <p className="mt-4 flex flex-wrap items-center gap-2 text-sm text-[#5d6259]"><CalendarDays size={16}/> {materia} · Sesión del {fecha}</p>
+              <p className="mt-4 flex flex-wrap items-center gap-2 text-sm text-[#5d6259]"><CalendarDays size={16}/> {CLASES.find((clase) => clase.value === materia)?.label ?? materia} · Sesión del {fecha}</p>
             </div>
             <button type="button" onClick={reset} className="inline-flex min-h-11 items-center gap-2 self-start border border-[#244c3b] px-4 py-2 text-sm font-semibold text-[#244c3b] hover:bg-[#e4e9dc]"><ArrowLeft size={16}/> Nueva solicitud</button>
           </div>
