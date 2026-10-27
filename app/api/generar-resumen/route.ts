@@ -6,7 +6,7 @@ type Tarjeta = { titulo: string; resumen: string; detalle: string };
 type MockResumen = { titulo: string; tarjetas: Tarjeta[]; audio_texto: string };
 
 const RESUMENES: Record<string, MockResumen> = {
-  "algoritmic-thinking": {
+  "Algoritmic Thinking": {
     titulo: "Pensar paso a paso: Algoritmic Thinking",
     tarjetas: [
       {
@@ -37,7 +37,7 @@ Para estudiar, elige una actividad cotidiana, como preparar tu mochila o planear
 
 La fecha de la sesión seleccionada es importante para que puedas relacionar este repaso con tu clase y tus apuntes. Antes de la próxima sesión, lleva tu algoritmo escrito y una pregunta sobre el paso que te pareció más difícil. Recuerda: descomponer, ordenar, probar y mejorar. Esa secuencia convierte un problema confuso en algo que puedes comprender y resolver.`
   },
-  "design-thinking": {
+  "Design Thinking": {
     titulo: "Diseñar desde las personas: Design Thinking",
     tarjetas: [
       {
@@ -66,7 +66,7 @@ La siguiente etapa es probar. Pide a alguien que use el prototipo para completar
 
 Estas etapas no siempre ocurren en una línea recta. Los resultados de una prueba pueden llevarte a redefinir el problema, regresar a la empatía o desarrollar una idea completamente distinta. Para prepararte para la próxima sesión, identifica una necesidad real, escribe una pregunta de diseño y crea un prototipo de baja fidelidad. Incluye una pregunta concreta que quieras investigar y evita intentar demostrar que tu primera idea es correcta. La meta es descubrir qué resulta útil para las personas.`
   },
-  "people-teams": {
+  "People and Teams": {
     titulo: "Colaborar con intención: People and Teams",
     tarjetas: [
       {
@@ -102,28 +102,15 @@ La fecha elegida en el formulario te ayuda a vincular este repaso con la sesión
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const materiaRecibida = typeof body.materiaId === "string"
-      ? body.materiaId
-      : typeof body.materia === "string"
-        ? body.materia
-        : typeof body.subject === "string"
-          ? body.subject
-          : "";
-    const fecha = typeof body.fecha === "string" ? body.fecha.trim() : "";
-
-    const IDS_MATERIA_VALIDOS = ["algoritmic-thinking", "design-thinking", "people-teams"] as const;
-    // Validación por identificador estable, compartido con el select del frontend.
-    const claveMateria = IDS_MATERIA_VALIDOS.find((id) => id === materiaRecibida);
-    if (!claveMateria) {
-      return NextResponse.json(
-        { error: `Selecciona una materia válida. ID recibido: ${materiaRecibida || "(vacío)"}` },
-        { status: 400 },
-      );
+    const materia = typeof body.materia === "string" ? body.materia : typeof body.subject === "string" ? body.subject : "";
+    const fecha = typeof body.fecha === "string" ? body.fecha : "";
+    if (!materia || !RESUMENES[materia]) {
+      return NextResponse.json({ error: "Selecciona una materia válida." }, { status: 400 });
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
       return NextResponse.json({ error: "Selecciona la fecha de la clase." }, { status: 400 });
     }
-    return NextResponse.json({ success: true, materia: claveMateria, fecha, ...RESUMENES[claveMateria] });
+    return NextResponse.json({ success: true, materia, fecha, ...RESUMENES[materia] });
   } catch {
     return NextResponse.json({ error: "No se pudo procesar la solicitud." }, { status: 400 });
   }
