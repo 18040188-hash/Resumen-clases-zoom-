@@ -1,65 +1,69 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Headphones, Pause, Play, RotateCcw, Volume2 } from "lucide-react";
+import { Headphones, Pause, Play, Volume2 } from "lucide-react";
 
-export default function AudioPlayer({ text }: { text: string }) {
+/**
+ * ElevenLabs-ready audio player.
+ * Pass audioSrc when a server route has generated audio bytes and returned a URL.
+ * TODO: Integrate ElevenLabs in a server-only route using ELEVENLABS_API_KEY,
+ * a configured voice_id, and POST { text, vozCalida } to generate an audio file.
+ * Never expose the ElevenLabs API key in client-side code.
+ */
+export default function AudioPlayer({
+  text,
+  vozCalida = true,
+  audioSrc,
+}: {
+  text: string;
+  vozCalida?: boolean;
+  audioSrc?: string;
+}) {
+  const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [supported, setSupported] = useState(true);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    setSupported(typeof window !== "undefined" && "speechSynthesis" in window);
-    return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
-    };
-  }, []);
+    setPlaying(false);
+    setError("");
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, [audioSrc, text]);
 
-  function play() {
-    if (!("speechSynthesis" in window)) { setSupported(false); return; }
-    if (paused) {
-      window.speechSynthesis.resume();
-      setPaused(false);
-      setPlaying(true);
+  async function togglePlayback() {
+    setError("");
+    if (!audioSrc || !audioRef.current) {
+      setError("La voz cálida de ElevenLabs está preparada para integrarse, pero aún falta configurar la API y generar el archivo de audio.");
       return;
     }
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "es-MX";
-    utterance.rate = 1;
-    utterance.onstart = () => { setPlaying(true); setPaused(false); };
-    utterance.onend = () => { setPlaying(false); setPaused(false); utteranceRef.current = null; };
-    utterance.onerror = () => { setPlaying(false); setPaused(false); utteranceRef.current = null; };
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+    if (playing) {
+      audioRef.current.pause();
+      setPlaying(false);
+      return;
+    }
+    try {
+      await audioRef.current.play();
+      setPlaying(true);
+    } catch {
+      setError("No se pudo reproducir el audio. Intenta de nuevo.");
+    }
   }
 
-  function pause() {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.pause();
-    setPlaying(false);
-    setPaused(true);
-  }
-
-  function stop() {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    utteranceRef.current = null;
-    setPlaying(false);
-    setPaused(false);
-  }
-
-  if (!supported) return <p className="max-w-56 rounded-xl bg-white/15 px-4 py-3 text-sm text-white">Tu navegador no admite lectura en voz alta. Prueba con una versión reciente de Chrome, Edge o Safari.</p>;
-
-  return <div className="min-w-56 rounded-2xl border border-white/20 bg-white/10 p-3">
-    <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-indigo-100"><Headphones size={15} /> AUDIO DEL RESUMEN</div>
-    <div className="flex flex-wrap gap-2">
-      <button type="button" onClick={playing ? pause : play} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-indigo-700 transition hover:bg-indigo-50">
-        {playing ? <Pause size={17} fill="currentColor" /> : paused ? <Play size={17} fill="currentColor" /> : <Volume2 size={17} />}
-        {playing ? "Pausar" : paused ? "Continuar" : "Escuchar resumen"}
+  return (
+    <div className="w-full max-w-md border border-white/25 bg-white/10 p-4 text-white">
+      <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#e3e7d8]">
+        <Headphones size={16} /> Repaso en audio · {vozCalida ? "voz cálida" : "voz estándar"}
+      </div>
+      <button type="button" onClick={togglePlayback}
+        className="inline-flex min-h-12 items-center gap-2 bg-[#fbf9f3] px-5 py-3 text-sm font-bold text-[#244c3b] hover:bg-[#e4e9dc]">
+        {playing ? <Pause size={17} /> : audioSrc ? <Play size={17} fill="currentColor" /> : <Volume2 size={17} />}
+        {playing ? "Pausar audio" : "Escuchar resumen"}
       </button>
-      {(playing || paused) && <button type="button" onClick={stop} aria-label="Detener audio" title="Detener audio" className="inline-flex items-center justify-center rounded-xl border border-white/30 px-3 text-white hover:bg-white/10"><RotateCcw size={17} /></button>}
+      {audioSrc && <audio ref={audioRef} src={audioSrc} onEnded={() => setPlaying(false)} onPause={() => setPlaying(false)} onPlay={() => setPlaying(true)} />}
+      <p className="mt-3 text-xs leading-5 text-[#e3e7d8]">{audioSrc ? "Audio generado con voz sintética." : "Integración de ElevenLabs pendiente de configurar."}</p>
+      {error && <p role="status" className="mt-2 text-sm leading-5 text-white">{error}</p>}
     </div>
-    <p className="mt-2 text-xs text-indigo-100">{playing ? "Reproduciendo…" : paused ? "Audio en pausa" : "Voz sintética de tu dispositivo"}</p>
-  </div>;
+  );
 }
