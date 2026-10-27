@@ -43,7 +43,7 @@ const fallback = {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const subject = typeof body.subject === "string" ? body.subject.trim() : "";
+    const subject = typeof body.subject === "string" ? body.subject.trim() : typeof body.materia === "string" ? body.materia.trim() : "";
     const fileName = typeof body.fileName === "string" ? body.fileName.trim() : "";
     const email = typeof body.email === "string" ? body.email.trim() : "";
 
