@@ -1,7 +1,8 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useState } from "react";
-import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, CheckCircle2, FileText, Mail, X } from "lucide-react";
+import Link from "next/link"; 
+import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, CheckCircle2, FileText, X } from "lucide-react"; // <-- QUITÉ "Mail"
 import SelectorClase from "@/components/SelectorClase";
 import AudioPlayer from "@/components/AudioPlayer";
 
@@ -76,10 +77,10 @@ export default function Home() {
     <main className="min-h-screen bg-[#f3f0e8] text-[#20251f]">
       <header className="border-b border-[#d8d1c4] bg-[#fbf9f3]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
-          <a href="/" className="flex items-center gap-3" aria-label="AulaClara, inicio">
+          <link href="/" className="flex items-center gap-3" aria-label="AulaClara, inicio">
             <span className="flex h-11 w-11 items-center justify-center bg-[#244c3b] text-white"><BookOpen size={22}/></span>
             <span><span className="block font-serif text-xl">AulaClara</span><span className="block text-xs text-[#65685f]">Una clase a la vez.</span></span>
-          </a>
+          </link>
           <span className="hidden text-xs font-semibold uppercase tracking-[0.16em] text-[#65685f] sm:block">Asistente académico</span>
         </div>
       </header>
