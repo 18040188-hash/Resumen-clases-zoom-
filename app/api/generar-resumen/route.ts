@@ -102,15 +102,29 @@ La fecha elegida en el formulario te ayuda a vincular este repaso con la sesión
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const materia = typeof body.materia === "string" ? body.materia : typeof body.subject === "string" ? body.subject : "";
-    const fecha = typeof body.fecha === "string" ? body.fecha : "";
-    if (!materia || !RESUMENES[materia]) {
-      return NextResponse.json({ error: "Selecciona una materia válida." }, { status: 400 });
+    const materiaRecibida = typeof body.materia === "string"
+      ? body.materia
+      : typeof body.subject === "string"
+        ? body.subject
+        : "";
+    const fecha = typeof body.fecha === "string" ? body.fecha.trim() : "";
+
+    // Normaliza espacios y mayúsculas para evitar rechazos por diferencias de formato.
+    const normalizar = (valor: string) => valor.trim().replace(/\s+/g, " ").toLocaleLowerCase("en");
+    const claveMateria = Object.keys(RESUMENES).find(
+      (clave) => normalizar(clave) === normalizar(materiaRecibida),
+    );
+
+    if (!claveMateria) {
+      return NextResponse.json(
+        { error: `La materia recibida no coincide con las opciones disponibles: ${materiaRecibida || "(vacía)"}.` },
+        { status: 400 },
+      );
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
       return NextResponse.json({ error: "Selecciona la fecha de la clase." }, { status: 400 });
     }
-    return NextResponse.json({ success: true, materia, fecha, ...RESUMENES[materia] });
+    return NextResponse.json({ success: true, materia: claveMateria, fecha, ...RESUMENES[claveMateria] });
   } catch {
     return NextResponse.json({ error: "No se pudo procesar la solicitud." }, { status: 400 });
   }
