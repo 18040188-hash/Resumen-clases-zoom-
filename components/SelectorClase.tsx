@@ -1,9 +1,9 @@
 "use client";
 
 export const CLASES = [
-  { value: "Algoritmic Thinking", label: "Algoritmic Thinking", grupo: "Grupo B", hora: "11:20" },
-  { value: "Design Thinking", label: "Design Thinking", grupo: "Grupo A", hora: "8:00" },
-  { value: "People and Teams", label: "People and Teams", grupo: "Grupo B", hora: "13:00" },
+  { value: "algoritmic-thinking", label: "Algoritmic Thinking", grupo: "Grupo B", hora: "11:20" },
+  { value: "design-thinking", label: "Design Thinking", grupo: "Grupo A", hora: "8:00" },
+  { value: "people-teams", label: "People and Teams", grupo: "Grupo B", hora: "13:00" },
 ] as const;
 
 export default function SelectorClase({
