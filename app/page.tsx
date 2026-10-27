@@ -1,44 +1,25 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useRef, useState } from "react";
-import {
-  ArrowLeft, ArrowRight, BookOpen, Check, CheckCircle2, Clock3, CloudUpload,
-  FileText, GraduationCap, Lightbulb, Mail, ShieldCheck, Sparkles, Target, Users
-} from "lucide-react";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, CheckCircle2, FileText, Mail, X } from "lucide-react";
+import SelectorClase from "@/components/SelectorClase";
 import AudioPlayer from "@/components/AudioPlayer";
-import StudyActions from "@/components/StudyActions";
 
-type StudySummary = {
-  subject: string;
-  title: string;
-  resumen_corto: string[];
-  temas_clave: string[];
-  preclass: string[];
-  actividades_breakout: string[];
-  mision_alumno: string[];
-  pregunta_hmw: string;
-};
-
-const subjects = [
-  "Divergent and Convergent Thinking",
-  "Innovación y modelos de negocio",
-  "Marketing estratégico",
-  "Fundamentos de administración",
-  "Análisis de datos",
-  "Comunicación y medios digitales",
-];
+type Tarjeta = { titulo: string; resumen: string; detalle: string };
+type Resumen = { titulo: string; tarjetas: Tarjeta[]; audio_texto: string; materia?: string; fecha?: string };
 
 export default function Home() {
-  const [subject, setSubject] = useState("");
+  const [materia, setMateria] = useState("");
+  const [fecha, setFecha] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [email, setEmail] = useState("");
+  const [resumen, setResumen] = useState<Resumen | null>(null);
+  const [detalleActivo, setDetalleActivo] = useState<Tarjeta | null>(null);
   const [loading, setLoading] = useState(false);
-  const [summary, setSummary] = useState<StudySummary | null>(null);
   const [error, setError] = useState("");
-  const fileInput = useRef<HTMLInputElement>(null);
 
-  function handleFile(e: ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0];
+  function handleFile(event: ChangeEvent<HTMLInputElement>) {
+    const selected = event.target.files?.[0];
     if (!selected) return;
     if (selected.size > 10 * 1024 * 1024) {
       setError("El archivo debe pesar menos de 10 MB.");
@@ -48,32 +29,32 @@ export default function Home() {
     setFile(selected);
   }
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!subject || !file || !email.trim()) {
-      setError("Completa todos los campos y adjunta tu justificante.");
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!materia || !fecha || !file || !email.trim()) {
+      setError("Selecciona la materia, la fecha y completa los datos del justificante.");
       return;
     }
-    setError("");
     setLoading(true);
-    setSummary(null);
+    setError("");
+    setResumen(null);
     try {
-      const response = await fetch("/api/justificar", {
+      const justificationResponse = await fetch("/api/justificar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, fileName: file.name, email: email.trim() }),
+        body: JSON.stringify({ subject: materia, materia, fecha, fileName: file.name, email: email.trim() }),
       });
-      const justification = await response.json();
-      if (!response.ok) throw new Error(justification.error || "No se pudo procesar el justificante.");
+      const justification = await justificationResponse.json();
+      if (!justificationResponse.ok) throw new Error(justification.error || "No se pudo procesar el justificante.");
 
-      const summaryResponse = await fetch("/api/generar-resumen", {
+      const response = await fetch("/api/generar-resumen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject }),
+        body: JSON.stringify({ materia, fecha }),
       });
-      const summaryData = await summaryResponse.json();
-      if (!summaryResponse.ok) throw new Error(summaryData.error || "No se pudo generar el resumen.");
-      setSummary(summaryData.resumen as StudySummary);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "No se pudo generar el resumen.");
+      setResumen(data as Resumen);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocurrió un error inesperado.");
     } finally {
@@ -81,121 +62,112 @@ export default function Home() {
     }
   }
 
-  function resetForm() {
-    setSummary(null);
-    setSubject("");
+  function reset() {
+    setMateria("");
+    setFecha("");
     setFile(null);
     setEmail("");
+    setResumen(null);
+    setDetalleActivo(null);
     setError("");
-    if (fileInput.current) fileInput.current.value = "";
   }
-
-  const audioText = summary
-    ? [
-        summary.title,
-        "El resumen en un minuto.",
-        ...summary.resumen_corto,
-        "Lo que se hizo en clase.",
-        ...summary.preclass,
-        ...summary.temas_clave,
-        ...summary.actividades_breakout,
-        "Tu misión.",
-        ...summary.mision_alumno,
-        summary.pregunta_hmw,
-      ].join(". ")
-    : "";
 
   return (
     <main className="min-h-screen bg-[#f3f0e8] text-[#20251f]">
       <header className="border-b border-[#d8d1c4] bg-[#fbf9f3]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-none bg-[#244c3b] text-white"><GraduationCap size={22} /></div>
-            <div><p className="text-base font-bold tracking-tight">Aula<span className="text-[#244c3b]">Clara</span></p><p className="text-xs text-slate-500">Asistente académico</p></div>
-          </div>
-          <div className="hidden items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 sm:flex"><ShieldCheck size={14} className="text-[#315b43]" /> Portal de estudiantes</div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e5e9df] text-sm font-bold text-[#244c3b]">AC</div>
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+          <a href="/" className="flex items-center gap-3" aria-label="AulaClara, inicio">
+            <span className="flex h-11 w-11 items-center justify-center bg-[#244c3b] text-white"><BookOpen size={22}/></span>
+            <span><span className="block font-serif text-xl">AulaClara</span><span className="block text-xs text-[#65685f]">Una clase a la vez.</span></span>
+          </a>
+          <span className="hidden text-xs font-semibold uppercase tracking-[0.16em] text-[#65685f] sm:block">Asistente académico</span>
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12">
-        <div className="mb-8 flex items-center gap-2 text-sm text-slate-500"><span>Portal</span><span>/</span><span className="font-medium text-slate-800">{summary ? "Resumen ejecutivo" : "Justificación de falta"}</span></div>
+      <div className="mx-auto max-w-6xl px-5 py-9 sm:px-8 sm:py-14">
+        {!resumen && <div className="grid gap-10 lg:grid-cols-[1fr_0.72fr]">
+          <section>
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[#b66a43]">Recupera el hilo de la clase</p>
+            <h1 className="max-w-xl font-serif text-5xl font-normal leading-[1.05] tracking-tight sm:text-6xl">Faltaste. Tu aprendizaje no tiene que hacerlo.</h1>
+            <p className="mt-5 max-w-xl text-base leading-7 text-[#5d6259]">Registra la sesión y recibe tres tarjetas de estudio con contexto ampliado y un repaso de audio preparado para acompañarte en el camino.</p>
+            <div className="mt-8 border-l-2 border-[#b66a43] pl-4 text-sm leading-6 text-[#5d6259]">Elige la materia y la fecha exacta para consultar el resumen correspondiente.</div>
+          </section>
 
-        {!summary && !loading && (
-          <>
-            <div className="mb-9 max-w-2xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#e5e9df] px-3 py-1.5 text-xs font-semibold text-[#244c3b]"><Sparkles size={14} /> TU CLASE, EN RESUMEN</div>
-              <h1 className="font-serif text-4xl font-normal tracking-tight sm:text-6xl">Justificación de falta</h1>
-              <p className="mt-3 text-base leading-7 text-slate-500">Envía tu justificante y recibe una guía de estudio breve que puedes leer o escuchar en el camino.</p>
+          <form onSubmit={handleSubmit} className="border border-[#d8d1c4] bg-[#fbf9f3] p-5 sm:p-7">
+            <div className="mb-6 flex items-start gap-3 border-b border-[#d8d1c4] pb-5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#e4e9dc] text-[#244c3b]"><FileText size={20}/></span>
+              <div><h2 className="font-serif text-2xl">Justificación de falta</h2><p className="mt-1 text-sm text-[#65685f]">Los campos marcados con * son obligatorios.</p></div>
             </div>
-            <div className="grid gap-7 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
-              <form onSubmit={handleSubmit} className="rounded-none border border-[#d8d1c4] bg-[#fbf9f3] p-6 shadow-none sm:p-8">
-                <div className="mb-7 flex items-center gap-3 border-b border-slate-100 pb-5"><div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#e5e9df] text-[#244c3b]"><FileText size={21} /></div><div><h2 className="font-semibold">Datos del justificante</h2><p className="mt-0.5 text-sm text-slate-500">Completa la información de tu ausencia.</p></div></div>
-                <label htmlFor="subject" className="mb-2 block text-sm font-semibold text-slate-700">Materia <span className="text-rose-500">*</span></label>
-                <select id="subject" value={subject} onChange={e => setSubject(e.target.value)} className="mb-6 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50" required>
-                  <option value="">Selecciona una materia</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-                <label htmlFor="file" className="mb-2 block text-sm font-semibold text-slate-700">Comprobante de ausencia <span className="text-rose-500">*</span></label>
-                <input ref={fileInput} id="file" type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleFile} className="hidden" />
-                <button type="button" onClick={() => fileInput.current?.click()} className="mb-6 flex w-full flex-col items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-50/70 px-5 py-8 text-center transition hover:border-indigo-400 hover:bg-[#e5e9df]/40">
-                  {file ? <><div className="mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-[#e4e9dc] text-[#315b43]"><Check size={22} /></div><span className="max-w-full truncate text-sm font-semibold text-slate-800">{file.name}</span><span className="mt-1 text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB · Archivo seleccionado</span></> : <><div className="mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-white text-[#244c3b] shadow-none"><CloudUpload size={22} /></div><span className="text-sm font-semibold text-slate-700">Haz clic para subir tu archivo</span><span className="mt-1 text-xs text-slate-500">PDF, JPG o PNG · Máximo 10 MB</span></>}
-                </button>
-                <label htmlFor="email" className="mb-2 block text-sm font-semibold text-slate-700">Correo institucional <span className="text-rose-500">*</span></label>
-                <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="nombre@universidad.edu.mx" required className="mb-6 w-full rounded-md border border-slate-200 px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50" />
-                {error && <p role="alert" className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
-                <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-md bg-[#244c3b] px-5 py-3.5 text-sm font-semibold text-white shadow-none transition hover:bg-[#183729] focus:outline-none focus:ring-4 focus:ring-indigo-200">Enviar justificante <ArrowRight size={17} /></button>
-                <p className="mt-4 text-left text-xs text-slate-500">Prototipo académico · No sustituye el portal oficial de tu universidad.</p>
-              </form>
-              <aside className="space-y-5">
-                <div className="overflow-hidden rounded-none bg-[#244c3b] p-6 text-white shadow-none"><div className="mb-8 flex h-11 w-11 items-center justify-center rounded-md bg-white/15"><Sparkles size={22} /></div><h3 className="text-xl font-semibold">Ponte al día en el trayecto.</h3><p className="mt-2 text-sm leading-6 text-indigo-100">Tres tarjetas, conceptos clave y una voz que te acompaña mientras vas al campus.</p><div className="mt-6 flex items-center gap-2 border-t border-white/15 pt-5 text-xs text-indigo-100"><Clock3 size={15} /> Repaso rápido + audio</div></div>
-                <div className="rounded-none border border-[#d8d1c4] bg-[#fbf9f3] p-5"><h3 className="font-semibold">¿Cómo funciona?</h3><div className="mt-5 space-y-5">{[{n:"01",title:"Adjunta tu justificante",desc:"Elige la materia y carga tu comprobante."},{n:"02",title:"Generamos tu guía",desc:"Convertimos la estructura de clase en tarjetas breves."},{n:"03",title:"Escucha y repasa",desc:"Usa la voz de tu dispositivo para estudiar en movimiento."}].map(x => <div key={x.n} className="flex gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-600">{x.n}</span><div><p className="text-sm font-semibold">{x.title}</p><p className="mt-1 text-xs leading-5 text-slate-500">{x.desc}</p></div></div>)}</div></div>
-              </aside>
+
+            <SelectorClase materia={materia} fecha={fecha} onMateriaChange={setMateria} onFechaChange={setFecha}/>
+
+            <div className="mt-5">
+              <label htmlFor="comprobante" className="mb-2 block text-sm font-semibold">Comprobante de ausencia *</label>
+              <input id="comprobante" type="file" accept=".pdf,.png,.jpg,.jpeg" required onChange={handleFile}
+                className="block w-full border border-dashed border-[#c9c1b4] bg-[#f3f0e8] p-3 text-sm file:mr-3 file:border-0 file:bg-[#e4e9dc] file:px-3 file:py-2 file:font-semibold file:text-[#244c3b]"/>
+              <p className="mt-1 text-xs text-[#65685f]">PDF, JPG o PNG · Máximo 10 MB {file ? `· ${file.name}` : ""}</p>
             </div>
-          </>
-        )}
 
-        {loading && <section className="mx-auto flex min-h-[55vh] max-w-lg flex-col items-center justify-center text-center"><div className="relative mb-7 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#e5e9df] text-[#244c3b]"><Sparkles size={32} /><span className="absolute -right-1 -top-1 h-4 w-4 animate-ping rounded-full bg-indigo-400" /></div><h1 className="text-2xl font-bold">Estamos preparando tu guía</h1><p className="mt-3 max-w-sm text-sm leading-6 text-slate-500">Organizamos los conceptos, las actividades y tu misión para la próxima clase.</p><div className="mt-8 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-slate-200"><div className="h-full w-2/3 animate-pulse rounded-full bg-[#244c3b]" /></div><div className="mt-5 space-y-3 text-left text-sm text-slate-500"><p className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Justificante recibido</p><p className="flex items-center gap-2"><span className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" /> Preparando tarjetas de estudio</p><p className="flex items-center gap-2"><Mail size={16} /> Preparando confirmación por correo</p></div></section>}
+            <div className="mt-5">
+              <label htmlFor="email" className="mb-2 block text-sm font-semibold">Correo institucional *</label>
+              <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nombre@universidad.edu.mx"
+                className="min-h-12 w-full border border-[#c9c1b4] bg-white px-4 py-3 text-sm outline-none focus:border-[#244c3b]"/>
+            </div>
 
-        {summary && <section className="mx-auto max-w-6xl">
-          <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div><div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#e4e9dc] px-3 py-1.5 text-xs font-semibold text-[#315b43]"><CheckCircle2 size={14} /> GUÍA DE ESTUDIO LISTA</div><h1 className="font-serif text-4xl font-normal tracking-tight sm:text-6xl">Ya estás al día.</h1><p className="mt-2 text-slate-500">Un resumen ejecutivo para entender, recordar y seguir avanzando.</p><p className="mt-3 text-sm font-semibold text-[#244c3b]">{summary.subject}</p></div>
-            <button onClick={resetForm} className="inline-flex items-center justify-center gap-2 self-start rounded-md border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"><ArrowLeft size={16} /> Nueva solicitud</button>
+            {error && <p role="alert" className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+            <button type="submit" disabled={loading} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#244c3b] px-5 py-3 text-sm font-bold text-white hover:bg-[#183729] disabled:cursor-wait disabled:opacity-60">
+              {loading ? "Preparando tu resumen…" : "Enviar y ver resumen"} <ArrowRight size={17}/>
+            </button>
+            <p className="mt-3 text-xs leading-5 text-[#65685f]">Prototipo académico. La confirmación de envío es simulada; el formulario no envía un correo real.</p>
+          </form>
+        </div>}
+
+        {loading && <div className="mt-12 border-y border-[#d8d1c4] py-10 text-center"><p className="font-serif text-3xl">Ordenando las ideas…</p><p className="mt-2 text-sm text-[#65685f]">Estamos preparando las tarjetas para tu sesión.</p></div>}
+
+        {resumen && <section>
+          <div className="mb-8 flex flex-col justify-between gap-5 border-b border-[#d8d1c4] pb-6 sm:flex-row sm:items-end">
+            <div>
+              <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#315b43]"><CheckCircle2 size={15}/> Guía de estudio lista</p>
+              <h1 className="max-w-3xl font-serif text-4xl font-normal leading-tight sm:text-6xl">{resumen.titulo}</h1>
+              <p className="mt-4 flex flex-wrap items-center gap-2 text-sm text-[#5d6259]"><CalendarDays size={16}/> {materia} · Sesión del {fecha}</p>
+            </div>
+            <button type="button" onClick={reset} className="inline-flex min-h-11 items-center gap-2 self-start border border-[#244c3b] px-4 py-2 text-sm font-semibold text-[#244c3b] hover:bg-[#e4e9dc]"><ArrowLeft size={16}/> Nueva solicitud</button>
           </div>
 
-          <div className="mb-6 relative overflow-hidden border-y-2 border-[#244c3b] bg-[#244c3b] p-5 text-[#fbf9f3] sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7">
-            <div className="mb-4 sm:mb-0"><div className="mb-2 flex items-center gap-2 text-sm font-semibold text-indigo-100"><Sparkles size={16} /> REPASO EN MOVIMIENTO</div><h2 className="text-xl font-bold sm:text-2xl">Tu clase, contada en voz alta.</h2><p className="mt-2 max-w-xl text-sm leading-6 text-indigo-100">Escucha las tres tarjetas sin tener que mirar la pantalla. La voz depende de las opciones disponibles en tu navegador.</p></div>
-            <div className="shrink-0"><AudioPlayer text={audioText} /></div>
+          <div className="mb-8 grid gap-6 border-y-2 border-[#244c3b] bg-[#244c3b] p-5 text-[#fbf9f3] sm:grid-cols-[1fr_auto] sm:items-center sm:p-7">
+            <div><p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#e3e7d8]">Escucha y repasa</p><h2 className="font-serif text-3xl">La clase, contada con calma.</h2><p className="mt-2 max-w-xl text-sm leading-6 text-[#e3e7d8]">El audio integra las tres tarjetas y añade contexto y recomendaciones de estudio.</p></div>
+            <AudioPlayer text={resumen.audio_texto} vozCalida/>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-3">
-            <article className="rounded-md border border-[#d8d1c4] bg-white p-6 shadow-none">
-              <div className="mb-5 flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#e5e9df] text-[#244c3b]"><BookOpen size={22} /></div><div><p className="text-xs font-semibold uppercase tracking-wider text-[#244c3b]">01 · Lo esencial</p><h2 className="text-lg font-bold">El resumen en 1 minuto</h2></div></div>
-              <ul className="space-y-4">{summary.resumen_corto.slice(0,3).map((item,i)=><li key={item} className="flex gap-3 text-sm leading-6 text-slate-600"><span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#e5e9df] text-xs font-bold text-[#244c3b]">{i+1}</span><span>{item}</span></li>)}</ul>
-            </article>
-
-            <article className="rounded-md border border-[#d8d1c4] bg-white p-6 shadow-none">
-              <div className="mb-5 flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-md bg-blue-50 text-[#244c3b]"><Users size={22} /></div><div><p className="text-xs font-semibold uppercase tracking-wider text-[#244c3b]">02 · La sesión</p><h2 className="text-lg font-bold">Lo que se hizo en clase</h2></div></div>
-              <div className="space-y-5"><div><p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Lecturas previas · Preclass</p><ul className="space-y-2">{summary.preclass.map(item=><li key={item} className="flex gap-2 text-sm leading-6 text-slate-600"><CheckCircle2 size={16} className="mt-1 shrink-0 text-[#315b43]"/><span>{item}</span></li>)}</ul></div><div><p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Temas clave</p><ul className="space-y-2">{summary.temas_clave.map(item=><li key={item} className="flex gap-2 text-sm leading-6 text-slate-600"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500"/><span>{item}</span></li>)}</ul></div><div><p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Trabajo en equipo · Breakouts</p><ul className="space-y-2">{summary.actividades_breakout.map(item=><li key={item} className="rounded-lg bg-[#eee9dc] p-3 text-sm leading-5 text-slate-700">{item}</li>)}</ul></div></div>
-            </article>
-
-            <article className="rounded-md border border-[#cbd4c3] bg-white p-6 shadow-none">
-              <div className="mb-5 flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#e4e9dc] text-[#315b43]"><Target size={22} /></div><div><p className="text-xs font-semibold uppercase tracking-wider text-[#315b43]">03 · Próximo paso</p><h2 className="text-lg font-bold">Tu misión</h2></div></div>
-              <p className="mb-4 text-sm leading-6 text-slate-500">Llega a la siguiente sesión con estas ideas claras:</p>
-              <ul className="space-y-3">{summary.mision_alumno.map((item,i)=><li key={item} className="flex gap-3 text-sm leading-6 text-slate-700"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#e4e9dc] text-xs font-bold text-[#315b43]">{i+1}</span><span>{item}</span></li>)}</ul>
-              <div className="mt-5 rounded-md border border-[#cbd4c3] bg-[#e4e9dc] p-4"><div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-emerald-800"><Lightbulb size={15}/> Pregunta HMW</div><p className="text-sm font-medium leading-6 text-emerald-950">{summary.pregunta_hmw}</p></div>
-            </article>
+            {resumen.tarjetas.map((tarjeta, index) => <article key={tarjeta.titulo} className={index === 1 ? "border-t-4 border-t-[#b66a43] border-x border-b border-[#d8d1c4] bg-[#eee9dc] p-6" : index === 2 ? "border-t-4 border-t-[#244c3b] border-x border-b border-[#cbd4c3] bg-[#e4e9dc] p-6" : "border-l-4 border-l-[#244c3b] border-y border-r border-[#d8d1c4] bg-[#fbf9f3] p-6"}>
+              <p className="mb-5 text-xs font-bold uppercase tracking-[0.18em] text-[#b66a43]">Tarjeta 0{index + 1}</p>
+              <h2 className="font-serif text-2xl leading-tight">{tarjeta.titulo}</h2>
+              <p className="mt-4 text-sm leading-7 text-[#444a41]">{tarjeta.resumen}</p>
+              <button type="button" onClick={() => setDetalleActivo(tarjeta)} className="mt-6 border-b border-[#244c3b] pb-1 text-sm font-bold text-[#244c3b] hover:text-[#b66a43]">Ver más <span aria-hidden="true">↗</span></button>
+            </article>)}
           </div>
 
-          <StudyActions title={summary.title} subject={summary.subject} summary={summary} />
-
-          <StudyActions title={summary.title} subject={summary.subject} summary={summary} />
-
-          <div className="mt-6 flex gap-3 rounded-md border border-[#cbd4c3] bg-[#e4e9dc] p-4"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#315b43]"><Mail size={18} /></div><div><p className="text-sm font-semibold text-emerald-900">Copia preparada para tu correo institucional</p><p className="mt-1 text-sm leading-5 text-emerald-800">Se ha enviado una copia a tu correo institucional: {email}. <span className="font-medium">(Confirmación simulada)</span></p></div></div>
-          <p className="mt-5 text-left text-xs text-slate-500">Resumen de demostración basado en datos de ejemplo; todavía no se analiza un documento de clase real.</p>
+          <div className="mt-8 flex flex-col gap-3 border-t border-[#d8d1c4] pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-2xl text-sm leading-6 text-[#65685f]">Consejo: escucha el audio una vez para captar la idea general y vuelve a las tarjetas para repasar los conceptos que necesites.</p>
+            <a href="https://app.minervaproject.com/home/student" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#244c3b] px-4 py-3 text-sm font-bold text-white hover:bg-[#183729]">Abrir Minerva <ArrowRight size={16}/></a>
+          </div>
+          <p className="mt-6 text-xs text-[#65685f]">Resumen de demostración con contenido de ejemplo. La generación de audio de ElevenLabs requiere configurar su API en el servidor.</p>
         </section>}
-
-        <footer className="mt-12 flex flex-col justify-between gap-2 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row"><span>© 2026 AulaClara · Prototipo universitario</span><span>Privacidad · Ayuda · Soporte</span></footer>
       </div>
+
+      <footer className="border-t border-[#d8d1c4] bg-[#fbf9f3] px-5 py-5 text-xs text-[#65685f]"><div className="mx-auto flex max-w-6xl justify-between gap-4"><span>AulaClara · Prototipo académico</span><span>Aprender también es recuperar el hilo.</span></div></footer>
+
+      {detalleActivo && <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#20251f]/65 p-0 sm:items-center sm:p-5" onMouseDown={(e) => { if (e.target === e.currentTarget) setDetalleActivo(null); }}>
+        <section role="dialog" aria-modal="true" aria-labelledby="detalle-titulo" className="max-h-[88vh] w-full max-w-2xl overflow-y-auto border border-[#d8d1c4] bg-[#fbf9f3] p-6 sm:p-9">
+          <div className="flex items-start justify-between gap-4 border-b border-[#d8d1c4] pb-5">
+            <div><p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#b66a43]">Lectura ampliada</p><h2 id="detalle-titulo" className="font-serif text-3xl">{detalleActivo.titulo}</h2></div>
+            <button type="button" onClick={() => setDetalleActivo(null)} aria-label="Cerrar detalle" className="flex h-10 w-10 shrink-0 items-center justify-center border border-[#d8d1c4] hover:bg-[#e4e9dc]"><X size={20}/></button>
+          </div>
+          <p className="whitespace-pre-line py-6 text-base leading-8 text-[#444a41]">{detalleActivo.detalle}</p>
+          <button type="button" onClick={() => setDetalleActivo(null)} className="min-h-11 bg-[#244c3b] px-5 py-3 text-sm font-bold text-white">Volver al resumen</button>
+        </section>
+      </div>}
     </main>
   );
 }
