@@ -46,15 +46,20 @@ export async function POST(request: Request) {
     const subject = typeof body.subject === "string" ? body.subject.trim() : "";
     const fileName = typeof body.fileName === "string" ? body.fileName.trim() : "";
     const email = typeof body.email === "string" ? body.email.trim() : "";
+    const motivo = typeof body.motivo === "string" ? body.motivo.trim() : "";
+    const palabrasMotivo = motivo ? motivo.split(/\\s+/).length : 0;
 
-    if (!subject || !fileName || !email) {
+    if (!subject || !fileName || !email || !motivo) {
       return NextResponse.json(
-        { error: "Materia, archivo y correo institucional son obligatorios." },
+        { error: "Materia, archivo, correo institucional y motivo de ausencia son obligatorios." },
         { status: 400 },
       );
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: "El correo electrónico no es válido." }, { status: 400 });
+    }
+    if (palabrasMotivo > 80) {
+      return NextResponse.json({ error: "El motivo de ausencia debe tener máximo 80 palabras." }, { status: 400 });
     }
     if (fileName.length > 255) {
       return NextResponse.json({ error: "El nombre del archivo es demasiado largo." }, { status: 400 });
