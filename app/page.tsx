@@ -14,6 +14,8 @@ export default function Home() {
   const [fecha, setFecha] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [email, setEmail] = useState("");
+  const [motivo, setMotivo] = useState("");
+  const palabrasMotivo = motivo.trim() ? motivo.trim().split(/\\s+/).length : 0;
   const [resumen, setResumen] = useState<Resumen | null>(null);
   const [detalleActivo, setDetalleActivo] = useState<Tarjeta | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,8 +34,12 @@ export default function Home() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!materia || !fecha || !file || !email.trim()) {
-      setError("Selecciona la materia, la fecha y completa los datos del justificante.");
+    if (!materia || !fecha || !file || !email.trim() || !motivo.trim()) {
+      setError("Selecciona la materia, la fecha y completa todos los datos del justificante.");
+      return;
+    }
+    if (palabrasMotivo > 80) {
+      setError("El motivo de ausencia debe tener máximo 80 palabras.");
       return;
     }
     setLoading(true);
@@ -43,7 +49,7 @@ export default function Home() {
       const justificationResponse = await fetch("/api/justificar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: materia, materia, fecha, fileName: file.name, email: email.trim() }),
+        body: JSON.stringify({ subject: materia, materia, fecha, fileName: file.name, email: email.trim(), motivo: motivo.trim() }),
       });
       const justification = await justificationResponse.json();
       if (!justificationResponse.ok) throw new Error(justification.error || "No se pudo procesar el justificante.");
@@ -121,6 +127,27 @@ export default function Home() {
                 className="min-h-12 w-full border border-[#c9c1b4] bg-white px-4 py-3 text-sm outline-none focus:border-[#244c3b]"/>
             </div>
 
+
+            <div className="mt-5">
+              <label htmlFor="motivo-ausencia" className="mb-2 block text-sm font-semibold">Motivo de ausencia *</label>
+              <textarea
+                id="motivo-ausencia"
+                name="motivo"
+                required
+                rows={4}
+                maxLength={1000}
+                value={motivo}
+                onChange={(e) => setMotivo(e.target.value)}
+                placeholder="Cuéntale brevemente a tu profesor por qué no pudiste asistir..."
+                aria-describedby="motivo-ayuda motivo-conteo"
+                className="min-h-28 w-full resize-y rounded-xl border border-[#c9c1b4] bg-white px-4 py-3 text-sm leading-6 outline-none transition focus:border-[#1a73e8] focus:ring-2 focus:ring-[#1a73e8]/15"
+              />
+              <div className="mt-1 flex items-start justify-between gap-3 text-xs">
+                <p id="motivo-ayuda" className="text-[#65685f]">Máximo 80 palabras. Esta nota acompaña tu solicitud.</p>
+                <p id="motivo-conteo" aria-live="polite" className={palabrasMotivo > 80 ? "shrink-0 font-semibold text-red-600" : "shrink-0 text-[#65685f]"}>{palabrasMotivo}/80 palabras</p>
+              </div>
+            </div>
+
             {error && <p role="alert" className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
             <button type="submit" disabled={loading} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#244c3b] px-5 py-3 text-sm font-bold text-white hover:bg-[#183729] disabled:cursor-wait disabled:opacity-60">
               {loading ? "Preparando tu resumen…" : "Enviar y ver resumen"} <ArrowRight size={17}/>
@@ -157,7 +184,7 @@ export default function Home() {
 
           <div className="mt-8 flex flex-col gap-3 border-t border-[#d8d1c4] pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-2xl text-sm leading-6 text-[#65685f]">Consejo: escucha el audio una vez para captar la idea general y vuelve a las tarjetas para repasar los conceptos que necesites.</p>
-            <a href="https://app.minervaproject.com/home/student" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#244c3b] px-4 py-3 text-sm font-bold text-white hover:bg-[#183729]">Abrir Minerva <ArrowRight size={16}/></a>
+            <div className="flex flex-col items-start gap-2"><a href="https://app.minervaproject.com/home/student" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#244c3b] px-4 py-3 text-sm font-bold text-white hover:bg-[#183729]">Abrir Minerva <ArrowRight size={16}/></a><p className="max-w-xs text-xs font-medium leading-5 text-[#5d6259]">No olvides completar tus actividades en Forum.</p></div>
           </div>
           <p className="mt-6 text-xs text-[#65685f]">Resumen de demostración con contenido de ejemplo. La generación de audio de ElevenLabs requiere configurar su API en el servidor.</p>
         </section>}
