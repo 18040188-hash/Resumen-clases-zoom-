@@ -75,6 +75,7 @@ export async function POST(request: Request) {
       to: email,
       subject: `Resumen de clase: ${subject}`,
       fileName,
+      motivo,
       summaryTitle: summary.title,
     });
 
