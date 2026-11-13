@@ -15,7 +15,7 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [email, setEmail] = useState("");
   const [motivo, setMotivo] = useState("");
-  const palabrasMotivo = motivo.trim() ? motivo.trim().split(/\\s+/).length : 0;
+  const palabrasMotivo = motivo.trim() ? motivo.trim().split(/\s+/).length : 0;
   const [resumen, setResumen] = useState<Resumen | null>(null);
   const [detalleActivo, setDetalleActivo] = useState<Tarjeta | null>(null);
   const [loading, setLoading] = useState(false);
