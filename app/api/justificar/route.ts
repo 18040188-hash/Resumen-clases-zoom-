@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const fileName = typeof body.fileName === "string" ? body.fileName.trim() : "";
     const email = typeof body.email === "string" ? body.email.trim() : "";
     const motivo = typeof body.motivo === "string" ? body.motivo.trim() : "";
-    const palabrasMotivo = motivo ? motivo.split(/\\s+/).length : 0;
+    const palabrasMotivo = motivo ? motivo.split(/\s+/).length : 0;
 
     if (!subject || !fileName || !email || !motivo) {
       return NextResponse.json(
