@@ -2,16 +2,16 @@
 
 import { ChangeEvent, FormEvent, useState } from "react";
 import Link from "next/link"; 
-import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, CheckCircle2, FileText, X } from "lucide-react"; // <-- QUITÉ "Mail"
+import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, CheckCircle2, FileText, X, GraduationCap, Users } from "lucide-react"; // <-- QUITÉ "Mail"
 import SelectorClase from "@/components/SelectorClase";
 import AudioPlayer from "@/components/AudioPlayer";
 import FacilitatorWorkspace from "@/components/FacilitatorWorkspace";
 
 type Tarjeta = { titulo: string; resumen: string; detalle: string };
-type Resumen = { titulo: string; tarjetas: Tarjeta[]; audio_texto: string; materia?: string; fecha?: string; materialesFacilitador?: { titulo: string; contenido: string; tipo: string }[] };
+type Resumen = { titulo: string; tarjetas: Tarjeta[]; audio_texto: string; materia?: string; fecha?: string; materialesFacilitador?: { titulo: string; descripcion: string; nombreArchivo?: string; tipo: string }[] };
 
 export default function Home() {
-  const [materia, setMateria] = useState("");
+  const [vista, setVista] = useState<"alumno" | "facilitador">("alumno");\n  const [materia, setMateria] = useState("");
   const [fecha, setFecha] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [email, setEmail] = useState("");
@@ -94,12 +94,12 @@ export default function Home() {
             <span className="flex h-11 w-11 items-center justify-center bg-[#244c3b] text-white"><BookOpen size={22}/></span>
             <span><span className="block font-serif text-xl">AulaClara</span><span className="block text-xs text-[#65685f]">Una clase a la vez.</span></span>
           </Link>
-          <span className="hidden text-xs font-semibold uppercase tracking-[0.16em] text-[#65685f] sm:block">Asistente académico</span>
+          <div className="flex items-center gap-1 rounded-full border border-[#dedede] bg-white p-1"><button type="button" onClick={() => { setVista("alumno"); setResumen(null); }} className={vista === "alumno" ? "inline-flex min-h-9 items-center gap-2 rounded-full bg-[#111] px-3 text-xs font-semibold text-white" : "inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#555]"}><GraduationCap size={15}/> Alumno</button><button type="button" onClick={() => { setVista("facilitador"); setResumen(null); }} className={vista === "facilitador" ? "inline-flex min-h-9 items-center gap-2 rounded-full bg-[#111] px-3 text-xs font-semibold text-white" : "inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#555]"}><Users size={15}/> Facilitador</button></div>
         </div>
       </header>
 
       <div className="mx-auto max-w-6xl px-5 py-9 sm:px-8 sm:py-14">
-        {!resumen && <div className="grid gap-10 lg:grid-cols-[1fr_0.72fr]">
+        {vista === "alumno" && !resumen && <div className="grid gap-10 lg:grid-cols-[1fr_0.72fr]">
           <section>
             <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[#b66a43]">Recupera el hilo de la clase</p>
             <h1 className="max-w-xl font-serif text-5xl font-normal leading-[1.05] tracking-tight sm:text-6xl">Faltaste. Tu aprendizaje no tiene que hacerlo.</h1>
@@ -163,7 +163,7 @@ export default function Home() {
           </form>
         </div>}
 
-        {!resumen && <FacilitatorWorkspace />}\n\n        {loading && <div className="mt-12 border-y border-[#d8d1c4] py-10 text-center"><p className="font-serif text-3xl">Ordenando las ideas…</p><p className="mt-2 text-sm text-[#65685f]">Estamos preparando las tarjetas para tu sesión.</p></div>}
+        {vista === "facilitador" && <FacilitatorWorkspace />}\n\n        {loading && <div className="mt-12 border-y border-[#d8d1c4] py-10 text-center"><p className="font-serif text-3xl">Ordenando las ideas…</p><p className="mt-2 text-sm text-[#65685f]">Estamos preparando las tarjetas para tu sesión.</p></div>}
 
         {resumen && <section>
           <div className="mb-8 flex flex-col justify-between gap-5 border-b border-[#d8d1c4] pb-6 sm:flex-row sm:items-end">
@@ -182,14 +182,14 @@ export default function Home() {
 
           <div className="grid gap-5 lg:grid-cols-3">
             {resumen.tarjetas.map((tarjeta, index) => <article key={tarjeta.titulo} className={index === 1 ? "border-t-4 border-t-[#b66a43] border-x border-b border-[#d8d1c4] bg-[#eee9dc] p-6" : index === 2 ? "border-t-4 border-t-[#244c3b] border-x border-b border-[#cbd4c3] bg-[#e4e9dc] p-6" : "border-l-4 border-l-[#244c3b] border-y border-r border-[#d8d1c4] bg-[#fbf9f3] p-6"}>
-              <p className="mb-5 text-xs font-bold uppercase tracking-[0.18em] text-[#b66a43]">Tarjeta 0{index + 1}</p>
+              <p className="mb-5 text-xs font-bold uppercase tracking-[0.18em] text-[#087e77]">{["01 · PARTICIPACIÓN EN CLASE","02 · ACTIVIDADES COLABORATIVAS","03 · CONTINUIDAD ACADÉMICA"][index] || "AULA CLARA"}</p>
               <h2 className="font-serif text-2xl leading-tight">{tarjeta.titulo}</h2>
               <p className="mt-4 text-sm leading-7 text-[#444a41]">{tarjeta.resumen}</p>
               <button type="button" onClick={() => setDetalleActivo(tarjeta)} className="mt-6 border-b border-[#244c3b] pb-1 text-sm font-bold text-[#244c3b] hover:text-[#b66a43]">Ver más <span aria-hidden="true">↗</span></button>
             </article>)}
           </div>
 
-          {resumen.materialesFacilitador && resumen.materialesFacilitador.length > 0 && <section className="mt-8 rounded-2xl border border-[#dfe3eb] bg-white p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[.16em] text-[#1967d2]">Material complementario del facilitador</p><h2 className="font-serif text-2xl">Notas y anuncios de esta materia</h2><div className="mt-4 space-y-4">{resumen.materialesFacilitador.map((item, index) => <article key={`${item.titulo}-${index}`} className="border-l-4 border-[#1a73e8] bg-[#f8fafd] p-4"><p className="text-xs font-bold uppercase text-[#5f6368]">{item.tipo === "anuncio" ? "Anuncio / actividad" : "Material de clase"}</p><h3 className="mt-1 font-semibold">{item.titulo}</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#3c4043]">{item.contenido}</p></article>)}</div></section>}\n\n          <div className="mt-8 flex flex-col gap-3 border-t border-[#d8d1c4] pt-5 sm:flex-row sm:items-center sm:justify-between">
+          {resumen.materialesFacilitador && resumen.materialesFacilitador.length > 0 && <section className="mt-8 rounded-2xl border border-[#dfe3eb] bg-white p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[.16em] text-[#1967d2]">Material complementario del facilitador</p><h2 className="font-serif text-2xl">Notas y anuncios de esta materia</h2><div className="mt-4 space-y-4">{resumen.materialesFacilitador.map((item, index) => <article key={`${item.titulo}-${index}`} className="border-l-4 border-[#04c0b3] bg-[#f6fbfa] p-4"><p className="text-xs font-bold uppercase text-[#087e77]">{item.tipo === "presentacion" ? "Presentación" : item.tipo === "caso" ? "Caso de estudio" : item.tipo === "mapa" ? "Mapa mental" : item.tipo === "nota" ? "Notas de clase" : item.tipo === "anuncio" ? "Anuncio" : "Material de clase"}</p><h3 className="mt-1 font-semibold">{item.titulo}</h3>{item.nombreArchivo && <p className="mt-1 text-xs text-[#666]">Archivo: {item.nombreArchivo}</p>}{item.descripcion && <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#3c4043]">{item.descripcion}</p>}</article>)}</div></section>}\n\n          <div className="mt-8 flex flex-col gap-3 border-t border-[#d8d1c4] pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-2xl text-sm leading-6 text-[#65685f]">Consejo: escucha el audio una vez para captar la idea general y vuelve a las tarjetas para repasar los conceptos que necesites.</p>
             <div className="flex flex-col items-start gap-2"><a href="https://app.minervaproject.com/home/student" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#244c3b] px-4 py-3 text-sm font-bold text-white hover:bg-[#183729]">Abrir Minerva <ArrowRight size={16}/></a><p className="max-w-xs text-xs font-medium leading-5 text-[#5d6259]">No olvides completar tus actividades en Forum.</p></div>
           </div>
