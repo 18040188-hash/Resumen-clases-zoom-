@@ -263,7 +263,7 @@ export default function Home() {
                 <a href={URLS_MINERVA.breakout} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#102d52] bg-white px-3 py-2 text-center text-sm font-bold text-[#102d52] hover:bg-[#102d52] hover:text-white">Ir a Breakout <ArrowRight size={15}/></a>
               </div>
             </div>
-          ) : <p className="whitespace-pre-line py-6 text-base leading-8 text-[#444a41]">{detalleActivo.detalle}</p>
+          ) : <p className="whitespace-pre-line py-6 text-base leading-8 text-[#444a41]">{detalleActivo.detalle}</p>}
           <button type="button" onClick={() => setDetalleActivo(null)} className="min-h-11 bg-[#244c3b] px-5 py-3 text-sm font-bold text-white">Volver al resumen</button>
         </section>
       </div>}
