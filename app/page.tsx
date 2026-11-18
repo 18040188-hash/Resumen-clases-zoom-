@@ -5,9 +5,10 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, CheckCircle2, FileText, X } from "lucide-react"; // <-- QUITÉ "Mail"
 import SelectorClase from "@/components/SelectorClase";
 import AudioPlayer from "@/components/AudioPlayer";
+import FacilitatorWorkspace from "@/components/FacilitatorWorkspace";
 
 type Tarjeta = { titulo: string; resumen: string; detalle: string };
-type Resumen = { titulo: string; tarjetas: Tarjeta[]; audio_texto: string; materia?: string; fecha?: string };
+type Resumen = { titulo: string; tarjetas: Tarjeta[]; audio_texto: string; materia?: string; fecha?: string; materialesFacilitador?: { titulo: string; contenido: string; tipo: string }[] };
 
 export default function Home() {
   const [materia, setMateria] = useState("");
@@ -46,6 +47,12 @@ export default function Home() {
     setError("");
     setResumen(null);
     try {
+      const category = /médic|medic|enferm|salud|hospital|consulta|doctor|cita/i.test(motivo) ? "Salud" : /famil|falle|funer|hij|madre|padre|herman/i.test(motivo) ? "Familiar" : /transporte|tráfico|metro|autobús|camión|accidente/i.test(motivo) ? "Transporte" : /examen|univers|escuela|académ|clase|tarea/i.test(motivo) ? "Académico" : /personal|trámite|situación/i.test(motivo) ? "Personal" : "Otro";
+      const palabrasCortas = motivo.toLowerCase().replace(/[^\\p{L}\\p{N}\\s]/gu, " ").split(/\\s+/).filter((word) => word && !["por","para","una","uno","que","con","del","las","los","estoy","tuve","debido","porque","mi","me","el","la","de","en","un"].includes(word)).slice(0,4);
+      const registro = { id: crypto.randomUUID(), materia, fecha, email: email.trim(), motivo: motivo.trim(), categoria: category, resumen: (palabrasCortas.length ? palabrasCortas : [category.toLowerCase(),"reportado"]).join(" "), fileName: file.name, createdAt: new Date().toISOString() };
+      const saved = JSON.parse(localStorage.getItem("aulaclara_justificantes_v1") || "[]");
+      localStorage.setItem("aulaclara_justificantes_v1", JSON.stringify([registro, ...saved]));
+
       const justificationResponse = await fetch("/api/justificar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,7 +64,7 @@ export default function Home() {
       const response = await fetch("/api/generar-resumen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ materia, fecha }),
+        body: JSON.stringify({ materia, fecha, materialesFacilitador: JSON.parse(localStorage.getItem("aulaclara_materiales_v1") || "[]").filter((item: { materia: string }) => item.materia === materia) }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "No se pudo generar el resumen.");
@@ -156,7 +163,7 @@ export default function Home() {
           </form>
         </div>}
 
-        {loading && <div className="mt-12 border-y border-[#d8d1c4] py-10 text-center"><p className="font-serif text-3xl">Ordenando las ideas…</p><p className="mt-2 text-sm text-[#65685f]">Estamos preparando las tarjetas para tu sesión.</p></div>}
+        {!resumen && <FacilitatorWorkspace />}\n\n        {loading && <div className="mt-12 border-y border-[#d8d1c4] py-10 text-center"><p className="font-serif text-3xl">Ordenando las ideas…</p><p className="mt-2 text-sm text-[#65685f]">Estamos preparando las tarjetas para tu sesión.</p></div>}
 
         {resumen && <section>
           <div className="mb-8 flex flex-col justify-between gap-5 border-b border-[#d8d1c4] pb-6 sm:flex-row sm:items-end">
@@ -182,7 +189,7 @@ export default function Home() {
             </article>)}
           </div>
 
-          <div className="mt-8 flex flex-col gap-3 border-t border-[#d8d1c4] pt-5 sm:flex-row sm:items-center sm:justify-between">
+          {resumen.materialesFacilitador && resumen.materialesFacilitador.length > 0 && <section className="mt-8 rounded-2xl border border-[#dfe3eb] bg-white p-6"><p className="mb-2 text-xs font-bold uppercase tracking-[.16em] text-[#1967d2]">Material complementario del facilitador</p><h2 className="font-serif text-2xl">Notas y anuncios de esta materia</h2><div className="mt-4 space-y-4">{resumen.materialesFacilitador.map((item, index) => <article key={`${item.titulo}-${index}`} className="border-l-4 border-[#1a73e8] bg-[#f8fafd] p-4"><p className="text-xs font-bold uppercase text-[#5f6368]">{item.tipo === "anuncio" ? "Anuncio / actividad" : "Material de clase"}</p><h3 className="mt-1 font-semibold">{item.titulo}</h3><p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#3c4043]">{item.contenido}</p></article>)}</div></section>}\n\n          <div className="mt-8 flex flex-col gap-3 border-t border-[#d8d1c4] pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-2xl text-sm leading-6 text-[#65685f]">Consejo: escucha el audio una vez para captar la idea general y vuelve a las tarjetas para repasar los conceptos que necesites.</p>
             <div className="flex flex-col items-start gap-2"><a href="https://app.minervaproject.com/home/student" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#244c3b] px-4 py-3 text-sm font-bold text-white hover:bg-[#183729]">Abrir Minerva <ArrowRight size={16}/></a><p className="max-w-xs text-xs font-medium leading-5 text-[#5d6259]">No olvides completar tus actividades en Forum.</p></div>
           </div>
