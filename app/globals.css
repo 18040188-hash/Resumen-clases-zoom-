@@ -583,3 +583,70 @@ body > main > div.fixed > section[role=dialog] button:hover { transform: transla
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+
+/* Universidad de la Libertad: black/white foundation with official accent palette */
+:root {
+  --ac-blue: #04c0b3;
+  --ac-blue-soft: #e5f8f6;
+  --ac-green: #04a99d;
+  --ac-green-soft: #e5f8f6;
+  --ac-yellow: #e1e652;
+  --ac-yellow-soft: #f8f9df;
+  --ac-red: #ea5861;
+  --ac-red-soft: #fff0f1;
+  --ac-ink: #111111;
+  --ac-muted: #555555;
+  --ac-line: #e5e5e5;
+  --ac-paper: #ffffff;
+}
+body {
+  background: #f7f7f5 !important;
+  color: #111111 !important;
+}
+body > main > header, body > main footer {
+  background: #ffffff !important;
+  border-color: #e5e5e5 !important;
+}
+body > main > header a > span:first-child {
+  background: #111111 !important;
+  color: #e1e652 !important;
+  box-shadow: none !important;
+}
+body > main > header a > span:first-child svg { color: #e1e652 !important; }
+body > main > header a > span:last-child > span:first-child { color: #111111 !important; }
+body > main > div > div.grid > section:first-child > p:first-child {
+  background: #e5f8f6 !important;
+  color: #087e77 !important;
+}
+body > main > div > div.grid > section:first-child > div:last-child {
+  border-left-color: #04c0b3 !important;
+  background: linear-gradient(90deg,#e5f8f6,rgba(229,248,246,0)) !important;
+}
+body form::before { background: linear-gradient(90deg,#111111 0 45%,#04c0b3 45% 72%,#e1e652 72% 88%,#ea5861 88%) !important; }
+body form button[type=submit], body > main section > div.mt-8.flex > a {
+  background: #111111 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+body form button[type=submit]:hover, body > main section > div.mt-8.flex > a:hover {
+  background: #303030 !important;
+}
+body > main section > div.grid.mb-8 {
+  background: linear-gradient(120deg,#111111,#292929) !important;
+}
+body > main section > div.grid.lg\\:grid-cols-3 > article:nth-child(1) { border-top-color: #04c0b3 !important; }
+body > main section > div.grid.lg\\:grid-cols-3 > article:nth-child(2) { border-top-color: #e1e652 !important; }
+body > main section > div.grid.lg\\:grid-cols-3 > article:nth-child(3) { border-top-color: #ea5861 !important; }
+body > main section > div.grid.lg\\:grid-cols-3 > article button {
+  background: #e5f8f6 !important;
+  color: #087e77 !important;
+}
+body > main section > div.grid.lg\\:grid-cols-3 > article:nth-child(2) button {
+  background: #f8f9df !important;
+  color: #555900 !important;
+}
+body > main section > div.grid.lg\\:grid-cols-3 > article:nth-child(3) button {
+  background: #fff0f1 !important;
+  color: #b3261e !important;
+}
