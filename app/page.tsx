@@ -49,7 +49,7 @@ export default function Home() {
     setResumen(null);
     try {
       const category = /médic|medic|enferm|salud|hospital|consulta|doctor|cita/i.test(motivo) ? "Salud" : /famil|falle|funer|hij|madre|padre|herman/i.test(motivo) ? "Familiar" : /transporte|tráfico|metro|autobús|camión|accidente/i.test(motivo) ? "Transporte" : /examen|univers|escuela|académ|clase|tarea/i.test(motivo) ? "Académico" : /personal|trámite|situación/i.test(motivo) ? "Personal" : "Otro";
-      const palabrasCortas = motivo.toLowerCase().replace(/[^\\p{L}\\p{N}\\s]/gu, " ").split(/\\s+/).filter((word) => word && !["por","para","una","uno","que","con","del","las","los","estoy","tuve","debido","porque","mi","me","el","la","de","en","un"].includes(word)).slice(0,10);
+      const palabrasCortas = motivo.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((word) => word && !["por","para","una","uno","que","con","del","las","los","estoy","tuve","debido","porque","mi","me","el","la","de","en","un","a","y","fue","ser"].includes(word)).slice(0,10);
       const registro = { id: crypto.randomUUID(), materia, fecha, email: email.trim(), motivo: motivo.trim(), categoria: category, resumen: (palabrasCortas.length ? palabrasCortas : [category.toLowerCase(),"reportado"]).join(" "), fileName: file.name, createdAt: new Date().toISOString() };
       const saved = JSON.parse(localStorage.getItem("aulaclara_justificantes_v1") || "[]");
       localStorage.setItem("aulaclara_justificantes_v1", JSON.stringify([registro, ...saved]));
