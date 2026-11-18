@@ -104,13 +104,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const materia = typeof body.materia === "string" ? body.materia : typeof body.subject === "string" ? body.subject : "";
     const fecha = typeof body.fecha === "string" ? body.fecha : "";
+    const materialesFacilitador = Array.isArray(body.materialesFacilitador) ? body.materialesFacilitador.filter((item: unknown) => item && typeof item === "object" && typeof (item as { titulo?: unknown }).titulo === "string" && typeof (item as { contenido?: unknown }).contenido === "string" && typeof (item as { tipo?: unknown }).tipo === "string").slice(0, 20).map((item: { titulo: string; contenido: string; tipo: string }) => ({ titulo: item.titulo.slice(0, 160), contenido: item.contenido.slice(0, 8000), tipo: item.tipo === "anuncio" ? "anuncio" : "material" })) : [];
     if (!materia || !RESUMENES[materia]) {
       return NextResponse.json({ error: "Selecciona una materia válida." }, { status: 400 });
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
       return NextResponse.json({ error: "Selecciona la fecha de la clase." }, { status: 400 });
     }
-    return NextResponse.json({ success: true, materia, fecha, ...RESUMENES[materia] });
+    return NextResponse.json({ success: true, materia, fecha, ...RESUMENES[materia], materialesFacilitador });
   } catch {
     return NextResponse.json({ error: "No se pudo procesar la solicitud." }, { status: 400 });
   }
