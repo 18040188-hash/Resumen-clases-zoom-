@@ -11,7 +11,8 @@ type Tarjeta = { titulo: string; resumen: string; detalle: string };
 type Resumen = { titulo: string; tarjetas: Tarjeta[]; audio_texto: string; materia?: string; fecha?: string; materialesFacilitador?: { titulo: string; descripcion: string; nombreArchivo?: string; tipo: string }[] };
 
 export default function Home() {
-  const [vista, setVista] = useState<"alumno" | "facilitador">("alumno");\n  const [materia, setMateria] = useState("");
+  const [vista, setVista] = useState<"alumno" | "facilitador">("alumno");
+  const [materia, setMateria] = useState("");
   const [fecha, setFecha] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [email, setEmail] = useState("");
