@@ -36,6 +36,7 @@ export default function Home() {
   const [motivo, setMotivo] = useState("");
   const palabrasMotivo = motivo.trim() ? motivo.trim().split(/\s+/).length : 0;
   const [resumen, setResumen] = useState<Resumen | null>(null);
+  const resumenVisible = resumen !== null && materia === "design-thinking";
   const [detalleActivo, setDetalleActivo] = useState<Tarjeta | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -79,14 +80,11 @@ export default function Home() {
       const justification = await justificationResponse.json();
       if (!justificationResponse.ok) throw new Error(justification.error || "No se pudo procesar el justificante.");
 
-      const response = await fetch("/api/generar-resumen", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ materia, fecha, materialesFacilitador: JSON.parse(localStorage.getItem("aulaclara_materiales_v1") || "[]").filter((item: { materia: string }) => item.materia === materia) }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "No se pudo generar el resumen.");
-      setResumen(data as Resumen);
+      if (materia === "design-thinking") {
+        setResumen({ ...RESUMEN_CHALLENGE, fecha });
+      } else {
+        setResumen(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocurrió un error inesperado.");
     } finally {
@@ -99,6 +97,7 @@ export default function Home() {
     setFecha("");
     setFile(null);
     setEmail("");
+    setMotivo("");
     setResumen(null);
     setDetalleActivo(null);
     setError("");
@@ -112,27 +111,12 @@ export default function Home() {
             <span className="flex h-11 w-11 items-center justify-center bg-[#dfff00] text-black"><span className="text-2xl font-black tracking-[-0.12em]">ul.</span></span>
             <span><span className="block text-xl font-black tracking-tight text-black">AulaClara</span><span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[#62666b]">Universidad de la Libertad</span></span>
           </Link>
-          <div className="flex items-center gap-1 rounded-full border border-[#dedede] bg-white p-1"><button type="button" onClick={() => { setVista("alumno"); setResumen(null); }} className={vista === "alumno" ? "inline-flex min-h-9 items-center gap-2 rounded-full bg-[#111] px-3 text-xs font-semibold text-white" : "inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#555]"}><GraduationCap size={15}/> Alumno</button><button type="button" onClick={() => { setVista("facilitador"); setResumen(null); }} className={vista === "facilitador" ? "inline-flex min-h-9 items-center gap-2 rounded-full bg-[#111] px-3 text-xs font-semibold text-white" : "inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#555]"}><Users size={15}/> Facilitador</button></div>
+          <div className="flex items-center gap-1 rounded-full border border-[#dedede] bg-white p-1"><button type="button" onClick={() => { setVista("alumno"); setResumen(null); setDetalleActivo(null); setMateria(""); setFecha(""); }} className={vista === "alumno" ? "inline-flex min-h-9 items-center gap-2 rounded-full bg-[#111] px-3 text-xs font-semibold text-white" : "inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#555]"}><GraduationCap size={15}/> Alumno</button><button type="button" onClick={() => { setVista("facilitador"); setResumen(null); setDetalleActivo(null); }} className={vista === "facilitador" ? "inline-flex min-h-9 items-center gap-2 rounded-full bg-[#111] px-3 text-xs font-semibold text-white" : "inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#555]"}><Users size={15}/> Facilitador</button></div>
         </div>
       </header>
 
       <div className="mx-auto max-w-6xl px-5 py-9 sm:px-8 sm:py-14">
         {vista === "alumno" && !resumen && <div className="grid gap-10 lg:grid-cols-[1fr_0.72fr]">
-          <section className="lg:col-span-2 rounded-xl border border-[#e2e4e7] bg-white p-5 shadow-sm sm:p-7">
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-              <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#102d52]">Portal del alumno</p><h2 className="mt-2 text-2xl font-extrabold tracking-tight text-[#111] sm:text-3xl">Mis cursos</h2></div>
-              <span className="rounded-full bg-[#f5f5f5] px-3 py-1 text-xs font-semibold text-[#62666b]">Ciclo 2026-C</span>
-            </div>
-            <button type="button" onClick={() => {
-              setMateria("design-thinking");
-              setFecha(new Date().toISOString().slice(0, 10));
-              setResumen(RESUMEN_CHALLENGE);
-              setDetalleActivo(null);
-            }} className="group flex w-full flex-col gap-3 rounded-lg border border-[#e0e0e0] bg-[#f5f5f5] p-5 text-left transition hover:border-[#c21878] hover:bg-white focus-visible:outline-offset-4 sm:flex-row sm:items-center sm:justify-between">
-              <span><span className="block text-xs font-bold uppercase tracking-[0.13em] text-[#62666b]">Design Thinking · Grupo A · 8:00</span><span className="mt-1 block text-lg font-extrabold text-[#111]">Challenge: Design thinking</span><span className="mt-1 block text-sm text-[#62666b]">Sesión de prototipado · Resumen de clase</span></span>
-              <span className="inline-flex min-h-10 items-center justify-center gap-2 self-start rounded-md bg-[#dfff00] px-4 py-2 text-sm font-bold text-[#111] group-hover:bg-[#c8e600] sm:self-center">Ver resumen <ArrowRight size={16}/></span>
-            </button>
-          </section>
           <section>
             <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[#b66a43]">Recupera el hilo de la clase</p>
             <h1 className="max-w-xl font-serif text-5xl font-normal leading-[1.05] tracking-tight sm:text-6xl">Faltaste. Tu aprendizaje no tiene que hacerlo.</h1>
@@ -150,7 +134,7 @@ export default function Home() {
             <SelectorClase 
               materia={materia} 
               fecha={fecha} 
-              onMateriaChange={setMateria} 
+              onMateriaChange={(value) => { setMateria(value); setResumen(null); setDetalleActivo(null); }} 
               onFechaChange={setFecha}
             />
 
@@ -198,7 +182,7 @@ export default function Home() {
 
         {vista === "facilitador" && <FacilitatorWorkspace />}\n\n        {loading && <div className="mt-12 border-y border-[#d8d1c4] py-10 text-center"><p className="font-serif text-3xl">Ordenando las ideas…</p><p className="mt-2 text-sm text-[#65685f]">Estamos preparando las tarjetas para tu sesión.</p></div>}
 
-        {resumen && <section>
+        {resumenVisible && resumen && <section>
           <div className="mb-8 flex flex-col justify-between gap-5 border-b border-[#d8d1c4] pb-6 sm:flex-row sm:items-end">
             <div>
               <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#315b43]"><CheckCircle2 size={15}/> Guía de estudio lista</p>
