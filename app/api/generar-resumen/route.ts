@@ -117,3 +117,7 @@ export async function POST(request: Request) {
     const titulos = ["Círculo socrático", "Breakouts / Polls", "Notas importantes para la siguiente clase"];
     const tarjetas = base.tarjetas.map((tarjeta, index) => ({ ...tarjeta, titulo: titulos[index] || tarjeta.titulo }));
     return NextResponse.json({ success: true, materia, fecha, ...base, tarjetas, audio_texto, materialesFacilitador });
+  } finally {
+    // Cierra el bloque try sin alterar el manejo original de errores.
+  }
+}
