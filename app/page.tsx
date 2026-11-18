@@ -92,8 +92,8 @@ export default function Home() {
       <header className="border-b border-[#d8d1c4] bg-[#fbf9f3]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="AulaClara, inicio">
-            <span className="flex h-11 w-11 items-center justify-center bg-[#244c3b] text-white"><BookOpen size={22}/></span>
-            <span><span className="block font-serif text-xl">AulaClara</span><span className="block text-xs text-[#65685f]">Una clase a la vez.</span></span>
+            <span className="flex h-11 w-11 items-center justify-center bg-[#dfff00] text-black"><span className="text-2xl font-black tracking-[-0.12em]">ul.</span></span>
+            <span><span className="block text-xl font-black tracking-tight text-black">AulaClara</span><span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[#62666b]">Universidad de la Libertad</span></span>
           </Link>
           <div className="flex items-center gap-1 rounded-full border border-[#dedede] bg-white p-1"><button type="button" onClick={() => { setVista("alumno"); setResumen(null); }} className={vista === "alumno" ? "inline-flex min-h-9 items-center gap-2 rounded-full bg-[#111] px-3 text-xs font-semibold text-white" : "inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#555]"}><GraduationCap size={15}/> Alumno</button><button type="button" onClick={() => { setVista("facilitador"); setResumen(null); }} className={vista === "facilitador" ? "inline-flex min-h-9 items-center gap-2 rounded-full bg-[#111] px-3 text-xs font-semibold text-white" : "inline-flex min-h-9 items-center gap-2 rounded-full px-3 text-xs font-semibold text-[#555]"}><Users size={15}/> Facilitador</button></div>
         </div>
