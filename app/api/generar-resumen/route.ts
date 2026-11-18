@@ -111,7 +111,10 @@ export async function POST(request: Request) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
       return NextResponse.json({ error: "Selecciona la fecha de la clase." }, { status: 400 });
     }
-    return NextResponse.json({ success: true, materia, fecha, ...RESUMENES[materia], materialesFacilitador });
+    const base = RESUMENES[materia];
+    const audioMateriales = materialesFacilitador.map((item: { titulo: string; contenido: string; tipo: string }) => `${item.tipo === "anuncio" ? "Anuncio importante" : "Material complementario"}: ${item.titulo}. ${item.contenido}`).join("\\n\\n");
+    const audio_texto = audioMateriales ? `${base.audio_texto}\\n\\nMaterial y avisos del facilitador.\\n${audioMateriales}` : base.audio_texto;
+    return NextResponse.json({ success: true, materia, fecha, ...base, audio_texto, materialesFacilitador });
   } catch {
     return NextResponse.json({ error: "No se pudo procesar la solicitud." }, { status: 400 });
   }
